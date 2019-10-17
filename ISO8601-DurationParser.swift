@@ -40,29 +40,24 @@ import Foundation
 extension DateComponents {
     //Note: Does not handle decimal values or overflow values
     //Format: PnYnMnDTnHnMnS or PnW
-    static func durationFrom8601String(durationString: String) -> DateComponents {
-        let timeDesignator = CharacterSet(charactersIn:"HMS")
-        let periodDesignator = CharacterSet(charactersIn:"YMD")
+    static func durationFrom8601String(durationString: String) -> DateComponents? {
+        
+        guard durationString.hasPrefix("P") else {
+            self.logErrorMessage(durationString: durationString)
+            return nil
+        }
+        let pRange = NSRange(location: 0, length: 1)
+
+        let mutableDurationString = durationString.mutableCopy() as! NSMutableString
+        mutableDurationString.deleteCharacters(in: pRange)
         
         var dateComponents = DateComponents()
-        let mutableDurationString = durationString.mutableCopy() as! NSMutableString
-        
-        let pRange = mutableDurationString.range(of: "P")
-        if pRange.location == NSNotFound {
-            self.logErrorMessage(durationString: durationString)
-            return dateComponents;
-        } else {
-            mutableDurationString.deleteCharacters(in: pRange)
-        }
-        
         
         if (durationString.range(of: "W") != nil) {
-            var weekValues = componentsForString(string: mutableDurationString as String, designatorSet: CharacterSet(charactersIn: "W"))
-            let weekValue: NSString? = weekValues["W"]! as NSString
-            
-            if (weekValue != nil) {
-                 //7 day week specified in ISO 8601 standard
-                dateComponents.day = Int(weekValue!.doubleValue * 7.0)
+            let weekValues = componentsForString(string: mutableDurationString as String, designatorSet: CharacterSet(charactersIn: "W"))
+            if let weekValue = weekValues["W"] as NSString? {
+                //7 day week specified in ISO 8601 standard
+                dateComponents.day = Int(weekValue.doubleValue * 7.0)
             }
             return dateComponents
         }
@@ -77,6 +72,9 @@ extension DateComponents {
             periodString = mutableDurationString.substring(to: tRange.location)
             timeString = mutableDurationString.substring(from: tRange.location + 1)
         }
+        
+        let timeDesignator = CharacterSet(charactersIn:"HMS")
+        let periodDesignator = CharacterSet(charactersIn:"YMD")
         
         //DnMnYn
         let periodValues = componentsForString(string: periodString, designatorSet: periodDesignator)
@@ -108,7 +106,7 @@ extension DateComponents {
     }
     
     static func componentsForString(string: String, designatorSet: CharacterSet) -> Dictionary<String, String> {
-        if string.count == 0 {
+        if string.isEmpty {
             return Dictionary()
         }
         let numericalSet = NSCharacterSet.decimalDigits
@@ -125,13 +123,13 @@ extension DateComponents {
             }
             return dictionary
         } else {
-            print("String: \(string) has an invalid format")
+            debugPrint("String: \(string) has an invalid format")
         }
         return Dictionary()
     }
     
     static func logErrorMessage(durationString: String) {
-        print("String: \(durationString) has an invalid format")
-        print("The durationString must have a format of PnYnMnDTnHnMnS or PnW")
+        debugPrint("String: \(durationString) has an invalid format")
+        debugPrint("The durationString must have a format of PnYnMnDTnHnMnS or PnW")
     }
 }
