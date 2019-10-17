@@ -40,7 +40,7 @@ import Foundation
 extension DateComponents {
     //Note: Does not handle decimal values or overflow values
     //Format: PnYnMnDTnHnMnS or PnW
-    static func durationFrom8601String(durationString: String) -> DateComponents? {
+    public static func durationFrom8601String(durationString: String) -> DateComponents? {
         
         guard durationString.hasPrefix("P") else {
             self.logErrorMessage(durationString: durationString)
@@ -105,7 +105,7 @@ extension DateComponents {
         return dateComponents
     }
     
-    static func componentsForString(string: String, designatorSet: CharacterSet) -> Dictionary<String, String> {
+    private static func componentsForString(string: String, designatorSet: CharacterSet) -> Dictionary<String, String> {
         if string.isEmpty {
             return Dictionary()
         }
@@ -128,7 +128,7 @@ extension DateComponents {
         return Dictionary()
     }
     
-    static func logErrorMessage(durationString: String) {
+    private static func logErrorMessage(durationString: String) {
         debugPrint("String: \(durationString) has an invalid format")
         debugPrint("The durationString must have a format of PnYnMnDTnHnMnS or PnW")
     }
